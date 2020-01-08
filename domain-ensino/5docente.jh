@@ -1,0 +1,118 @@
+entity Professor(pdg_professor) {
+    numeroAgente String required unique,
+    bancoSalario String,
+    numeroConta String,
+    inss String,
+	ativo Boolean
+}
+
+entity CriterioAvaliacao(pdg_criterio_avaliacao) {
+	aprovaCom Integer required min(0), // 4 dificiencias
+	reporvaCom Integer required min(0),
+	recursoCom Integer required min(0),
+	fazExame Boolean required,
+	fazRecurso Boolean required,
+	fazExameEspecial Boolean required,
+	numeroFaltaReprova Integer required min(0),
+	menorNota Double min(0) required,
+	maiorNota Double required min(0),
+	notaMinimaAprovacao Double min(0) required
+}
+
+entity Aula(prof_aula) {
+	data ZonedDateTime required,
+	sumario String required,
+	licao Integer required,
+	dada Boolean required
+}
+
+entity Dossificacao(pdg_dossificacao) {
+	periodoLectivo String required,
+	anoLectivo LocalDate required,
+	objectivoGeral String required,
+	objectivoEspecifico TextBlob required,
+	semanaLectiva Integer required,
+	de LocalDate required,
+	ate LocalDate required,
+	conteudo TextBlob required,
+	procedimentoEnsino TextBlob required,
+	recursosDidatico TextBlob required,
+	tempoAula ZonedDateTime required,
+	formaAvaliacao String required
+}
+
+entity PlanoAula(prof_plano_aula) {
+	objectivoGeral TextBlob required,
+	objectivoEspecifico TextBlob required,
+	conteudo TextBlob required,
+	estrategia TextBlob required,
+	actividades TextBlob required,
+	tempo ZonedDateTime required,
+	recursosEnsino TextBlob required,
+	avaliacao TextBlob required,
+	observacao TextBlob required,
+	bibliografia TextBlob required,
+	perfilEntrada TextBlob required,
+	perfilSaida TextBlob required,
+	anexo1 AnyBlob,
+	anexo2 AnyBlob,
+	anexo3 AnyBlob
+}
+
+entity CategoriaValiacao(pdg_categoria_avaliacao) {
+	nome String required unique,
+	siglaInterna String unique,
+	siglaPauta String unique required
+}
+
+entity Nota(prof_nota) {
+	valor Double min(0) max(20) required,
+	data ZonedDateTime,
+    anoLectivo LocalDate,
+    periodoLectivo String
+}
+
+/**
+ * One to one relationship.
+ */
+relationship OneToOne {
+	CriterioAvaliacao{planoCurricular(descricao)} to PlanoCurricular,
+    Professor{pessoa(nome) required } to Pessoa
+}
+
+relationship OneToMany {
+    Lookup to Nota{disciplina(nome) required},
+    Turma to Nota{turma(descricao) required},
+    Lookup to PlanoAula{disciplina(nome) required},
+	Turma to Aula{turma(descricao) required},
+	Lookup to Dossificacao{disciplina(nome) required},
+	Dossificacao to PlanoAula{dossificacao},
+	Lookup to CategoriaValiacao{areaFormacao(nome) required},
+	CategoriaValiacao to Nota{categoriaAvaliacao(nome)},
+	Aluno to Nota{matricula(numeroProcesso) required }
+}
+
+/**
+ * Many to one relationship.
+ */
+relationship ManyToOne {
+	PlanoAula{professor(login)} to User,
+	Aula{professor(login)} to User,
+	Nota{professor(login)} to User
+}
+
+relationship ManyToMany {
+	Aula{planoAula} to PlanoAula{aula},
+	PlanoAula{turma(descricao) required} to Turma{planoAula},
+	Dossificacao{curso(nome) required} to Curso{dossificacao},
+	Dossificacao{classe(nome) required} to Lookup{dossificacao},
+	Professor{disciplina(nome) required} to Lookup{professor},
+	Professor{classe(nome) required} to Lookup
+}
+
+
+dto * with mapstruct
+paginate * with pagination
+service * with serviceClass
+search * with elasticsearch
+filter Professor, Aula, Dossificacao, Nota

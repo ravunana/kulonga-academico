@@ -1,0 +1,84 @@
+entity Curso {
+	nome String required minlength(10) unique,
+	sigla String required minlength(3) maxlength(12) unique,
+	competencias TextBlob
+}
+
+entity PlanoCurricular {
+	descricao String required,
+	terminal Boolean required
+}
+
+entity UnidadeAprendizagem {
+	descricao TextBlob required unique,
+	unidade String required,
+	numero Integer required
+}
+
+entity Turma {
+	descricao String required unique,
+    anoLectivo LocalDate,
+    data ZonedDateTime,
+	ativo Boolean
+}
+
+entity Horario {
+	inicioAula ZonedDateTime required,
+	terminoAlua ZonedDateTime required,
+	intervalo ZonedDateTime required,
+	data ZonedDateTime required,
+    anoLectivo LocalDate
+}
+
+entity PlanoActividade {
+	numeroActividade Integer unique min(1),
+	atividade String required,
+	objectivos TextBlob required,
+	de LocalDate required,
+	ate LocalDate required,
+	responsavel String required, // userID
+	local String,
+	observacao TextBlob,
+	participantes String, // Comunidade escolar, delegados de turma, professores, coordenadores, pessoal administrativo
+	coResponsavel String, // userID
+	anoLectivo LocalDate required
+}
+
+relationship OneToMany {
+	Lookup to Turma{sala(nome) required},
+    Lookup to Turma{classe(nome) required},
+	Curso to Turma{curso(nome) required},
+    Lookup to PlanoCurricular{disciplina(nome) required},
+    Lookup to Curso{areaFormacao(nome) required},
+    Turma to Horario{turma(descricao) required},
+    Lookup to PlanoCurricular{classe(nome) required},
+	Lookup to Horario{disciplina(nome) required},
+	Lookup to UnidadeAprendizagem{disciplina(nome) required},
+	Lookup to UnidadeAprendizagem{classe(descricao) required},
+	Curso to PlanoCurricular{curso(nome) required},
+	PlanoCurricular to UnidadeAprendizagem{planoCurricular(descricao)},
+	Lookup to PlanoCurricular{tempoSemanal(nome) required },
+	Lookup to PlanoCurricular{periodoLectivo(nome) required },
+	Lookup to PlanoCurricular{componente(nome) required},
+	Lookup to Turma{periodoLectivo(nome) required},
+	Lookup to Turma{turno(nome) required},
+	Lookup to Horario{tempoLectivo(nome) required},
+	Lookup to Horario{tempoLectivo(nome) required},
+	Lookup to Horario{diaSemana(nome) required},
+	Lookup to Horario{periodoLectivo(nome) required},
+	Lookup to PlanoActividade{statusActividade(nome) required},
+	Lookup to PlanoActividade{periodoLectivo(nome) required},
+	Curso to PlanoActividade,
+	Turma to PlanoActividade,
+	Professor to Horario,
+	Lookup to PlanoActividade{turno(nome)},
+	Lookup to PlanoActividade{classe(nome)},
+	Lookup to Horario{categoria(nome) required} // AULA, PROVA
+	
+}
+
+dto * with mapstruct
+paginate * with pagination
+service * with serviceClass
+search * with elasticsearch
+filter Curso, PlanoCurricular, Turma, Horario, PlanoActividade

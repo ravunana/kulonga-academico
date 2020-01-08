@@ -1,0 +1,83 @@
+entity Software {
+	InstituicaoEnsino String required,
+    tipoSistema String required, // DP
+    nif String required,
+    numeroValidacaoAGT Integer required, // DP
+    nome String maxlength(255) required,
+    versao String maxlength(30) required,
+    hashCode String required,
+    hashControl String required
+}
+
+entity LicencaSoftware {
+    tipoSubscricao String required, // MENSAL, SEMESTRAL, ANUAL
+    inicio ZonedDateTime required,
+    fim ZonedDateTime required,
+    data ZonedDateTime,
+    valor BigDecimal min(0) required,
+    codigo String unique required,
+    numeroUsuario Integer min(1),
+    numeroInstituicaoEnsino Integer min(1)
+}
+
+entity EntidadeSistema {
+    nome String required unique // Sexo
+}
+
+entity Lookup {
+    nome String unique required, // Masculino, Pai
+    sigla String unique required, // M, PAIA
+    descricao TextBlob, // Sexo da pessoa, Parente da Pessoa
+    usuario Boolean // nao
+}
+
+// inicio InstituicaoEnsino module
+entity InstituicaoEnsino {
+	nome String required unique,
+    logotipo ImageBlob required,
+    fundacao LocalDate,
+    numero String unique,
+    dimensao String,
+    carimbo AnyBlob
+    sede Boolean required,
+    
+    // Localizacao
+    bairro String required,
+    rua String maxlength(200) required,
+    quarteirao String maxlength(10) required,
+    numeroPorta String maxlength(10)
+}
+
+entity AssinaturaDigital {
+    tipo String required, // Director pedagogico, geral, coordenador
+    assinatura AnyBlob,
+    hashcode String unique,
+    data ZonedDateTime
+}
+
+entity ContactoInstituicaoEnsino {
+	descricao String required,
+    contacto String unique required
+}
+
+relationship OneToMany {
+	InstituicaoEnsino to InstituicaoEnsino{hierarquia(nome)},
+    InstituicaoEnsino to ContactoInstituicaoEnsino{InstituicaoEnsino(nome) required},
+    Software to LicencaSoftware{software(nome)},
+    InstituicaoEnsino to LicencaSoftware{InstituicaoEnsino(nome) required},
+    InstituicaoEnsino to AssinaturaDigital{instituicao(nome) required },
+    EntidadeSistema to Lookup{entidade(nome) required},
+    Lookup to InstituicaoEnsino{tipoVinculo(nome)},
+    Lookup to InstituicaoEnsino{unidadePagadora(nome)},
+    Lookup to InstituicaoEnsino{tipoInstalacao(nome)},
+    Lookup to InstituicaoEnsino{provincia(nome)},
+    Lookup to InstituicaoEnsino{municipio(nome)},
+    Lookup to AssinaturaDigital{categoria(nome)}, // DP, DG, DA
+    Lookup to ContactoInstituicaoEnsino{tipoContacto(nome) required}
+}
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+search * with elasticsearch
+filter InstituicaoEnsino, Lookup
